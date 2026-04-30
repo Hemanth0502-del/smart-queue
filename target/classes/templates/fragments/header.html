@@ -11,6 +11,7 @@
         <div class="collapse navbar-collapse" id="topNavbar">
             <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-lg-center">
                 <li class="nav-item"><a class="nav-link" th:href="@{/}">Home</a></li>
+                <li class="nav-item"><a class="nav-link" th:href="@{/live}">Live Queue</a></li>
                 <li class="nav-item" sec:authorize="hasRole('ADMIN')"><a class="nav-link" th:href="@{/admin/dashboard}">Admin</a></li>
                 <li class="nav-item" sec:authorize="hasRole('STAFF')"><a class="nav-link" th:href="@{/staff/dashboard}">Staff</a></li>
                 <li class="nav-item" sec:authorize="hasRole('USER')"><a class="nav-link" th:href="@{/user/dashboard}">Generate Token</a></li>

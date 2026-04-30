@@ -14,50 +14,31 @@
     <section class="container py-5">
         <div class="row align-items-center g-5">
             <div class="col-lg-6">
-                <p class="text-uppercase text-muted small fw-semibold mb-2">Queue operations</p>
+                <p class="section-kicker mb-2">Queue operations</p>
                 <h1 class="display-6 fw-semibold mb-3">Smart Queue Management System</h1>
                 <p class="lead text-secondary mb-4">
-                    Register customers, issue queue tickets, and monitor service flow from a focused admin dashboard.
+                    A full-stack queue management platform for token generation, staff counter operations,
+                    live public display, and admin analytics.
                 </p>
-                <a class="btn btn-dark" href="#new-ticket">Create Ticket</a>
-                <a class="btn btn-outline-dark ms-2" th:href="@{/login}">Admin Login</a>
+                <div class="d-flex flex-wrap gap-2">
+                    <a class="btn btn-dark" th:href="@{/register}">Register as User</a>
+                    <a class="btn btn-outline-dark" th:href="@{/live}">View Live Queue</a>
+                    <a class="btn btn-outline-dark" th:href="@{/login}">Login</a>
+                </div>
             </div>
             <div class="col-lg-6">
                 <div class="surface-panel p-4">
                     <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-3">
                         <div>
-                            <div class="small text-muted">Now serving</div>
-                            <div class="h3 mb-0">SQ-00024</div>
+                            <div class="small text-muted">System modules</div>
+                            <div class="h4 fw-semibold mb-0">Admin, Staff, User</div>
                         </div>
-                        <span class="badge text-bg-light border">Counter C02</span>
+                        <span class="badge text-bg-light border">Production-ready</span>
                     </div>
-                    <div class="queue-row"><span>SQ-00025</span><span class="text-muted">Waiting</span></div>
-                    <div class="queue-row"><span>SQ-00026</span><span class="text-muted">Waiting</span></div>
-                    <div class="queue-row"><span>SQ-00027</span><span class="text-muted">Waiting</span></div>
-                </div>
-            </div>
-        </div>
-
-        <div id="new-ticket" class="row justify-content-center mt-5">
-            <div class="col-lg-7">
-                <div class="surface-panel p-4">
-                    <div th:if="${ticketNumber}" class="alert alert-light border" role="alert">
-                        Ticket created successfully. Your ticket number is <strong th:text="${ticketNumber}">SQ-00001</strong>.
-                    </div>
-                    <h2 class="h4 fw-semibold mb-3">Create New Ticket</h2>
-                    <form th:action="@{/tickets}" th:object="${ticketRequest}" method="post" novalidate>
-                        <div class="mb-3">
-                            <label for="customerName" class="form-label">Customer Name</label>
-                            <input id="customerName" type="text" class="form-control" th:field="*{customerName}" required>
-                            <div class="text-danger small mt-1" th:if="${#fields.hasErrors('customerName')}" th:errors="*{customerName}"></div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="phoneNumber" class="form-label">Phone Number</label>
-                            <input id="phoneNumber" type="text" class="form-control" th:field="*{phoneNumber}">
-                            <div class="text-danger small mt-1" th:if="${#fields.hasErrors('phoneNumber')}" th:errors="*{phoneNumber}"></div>
-                        </div>
-                        <button type="submit" class="btn btn-dark">Issue Ticket</button>
-                    </form>
+                    <div class="queue-row"><span>Token generation</span><span class="text-muted">User</span></div>
+                    <div class="queue-row"><span>Smart queue calling</span><span class="text-muted">Staff</span></div>
+                    <div class="queue-row"><span>Reports and management</span><span class="text-muted">Admin</span></div>
+                    <div class="queue-row"><span>Live public display</span><span class="text-muted">Public</span></div>
                 </div>
             </div>
         </div>

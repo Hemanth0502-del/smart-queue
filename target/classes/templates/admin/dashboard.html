@@ -26,25 +26,25 @@
                 <div class="col-sm-6 col-xl">
                     <div class="dashboard-card">
                         <div class="text-muted small">Total Tokens</div>
-                        <div class="metric" th:text="${stats.totalTickets()}">0</div>
+                        <div class="metric" th:text="${stats.totalTokens()}">0</div>
                     </div>
                 </div>
                 <div class="col-sm-6 col-xl">
                     <div class="dashboard-card">
                         <div class="text-muted small">Waiting</div>
-                        <div class="metric" th:text="${stats.waitingTickets()}">0</div>
+                        <div class="metric" th:text="${stats.waitingTokens()}">0</div>
                     </div>
                 </div>
                 <div class="col-sm-6 col-xl">
                     <div class="dashboard-card">
                         <div class="text-muted small">Serving</div>
-                        <div class="metric" th:text="${stats.servingTickets()}">0</div>
+                        <div class="metric" th:text="${stats.servingTokens()}">0</div>
                     </div>
                 </div>
                 <div class="col-sm-6 col-xl">
                     <div class="dashboard-card">
                         <div class="text-muted small">Completed</div>
-                        <div class="metric" th:text="${stats.completedTickets()}">0</div>
+                        <div class="metric" th:text="${stats.completedTokens()}">0</div>
                     </div>
                 </div>
                 <div class="col-sm-6 col-xl">
@@ -88,20 +88,18 @@
             </section>
 
             <section id="counters" class="surface-panel p-4 mt-4">
-                <h2 class="h5 fw-semibold mb-3">Counter Management</h2>
-                <form class="row g-3">
-                    <div class="col-md-4">
-                        <label class="form-label" for="counterCode">Counter Code</label>
-                        <input class="form-control" id="counterCode" value="C04" disabled>
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                    <div>
+                        <h2 class="h5 fw-semibold mb-1">Management Shortcuts</h2>
+                        <p class="text-muted mb-0">Open the core admin tools for category, counter, and queue control.</p>
                     </div>
-                    <div class="col-md-5">
-                        <label class="form-label" for="counterName">Counter Name</label>
-                        <input class="form-control" id="counterName" value="Billing Desk" disabled>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a class="btn btn-outline-dark" th:href="@{/admin/categories}">Categories</a>
+                        <a class="btn btn-outline-dark" th:href="@{/admin/counters}">Counters</a>
+                        <a class="btn btn-outline-dark" th:href="@{/admin/tokens}">Tokens</a>
+                        <a class="btn btn-dark" th:href="@{/admin/reports}">Reports</a>
                     </div>
-                    <div class="col-md-3 d-flex align-items-end">
-                        <button class="btn btn-outline-dark w-100" type="button" disabled>Add Counter</button>
-                    </div>
-                </form>
+                </div>
             </section>
         </div>
     </main>

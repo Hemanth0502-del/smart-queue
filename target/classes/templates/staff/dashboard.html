@@ -39,6 +39,14 @@
                             <div class="text-muted small">Waiting</div>
                             <div class="fw-semibold" th:text="${status.waitingCount()}">0</div>
                         </div>
+                        <div class="col-6">
+                            <div class="text-muted small">Next Token</div>
+                            <div class="fw-semibold" th:text="${status.nextWaitingToken().isPresent() ? status.nextWaitingToken().get().tokenNumber : '-'}">HOS-002</div>
+                        </div>
+                        <div class="col-6">
+                            <div class="text-muted small">Next Wait</div>
+                            <div class="fw-semibold" th:text="${status.nextWaitingToken().isPresent() ? status.nextWaitingToken().get().estimatedWaitMinutes + ' min' : '-'}">8 min</div>
+                        </div>
                     </div>
                     <div class="d-flex flex-wrap gap-2 mt-3">
                         <form th:action="@{/staff/counters/{id}/call-next(id=${status.counter().id})}" method="post">
@@ -79,7 +87,7 @@
             <h2 class="h5 fw-semibold mb-3">Recent Tokens</h2>
             <div class="table-responsive">
                 <table class="table table-hover align-middle">
-                    <thead><tr><th>Token</th><th>Priority</th><th>Category</th><th>Counter</th><th>Status</th><th>Issued</th><th>Actions</th></tr></thead>
+                    <thead><tr><th>Token</th><th>Priority</th><th>Category</th><th>Counter</th><th>Status</th><th>Wait</th><th>Issued</th><th>Actions</th></tr></thead>
                     <tbody>
                     <tr th:each="token : ${recentTokens}">
                         <td class="fw-semibold" th:text="${token.tokenNumber}">HOS-001</td>
@@ -87,6 +95,7 @@
                         <td th:text="${token.category.name}">Hospital</td>
                         <td th:text="${token.counter != null ? token.counter.code : '-'}">-</td>
                         <td><span class="badge text-bg-light border" th:text="${token.status}">WAITING</span></td>
+                        <td th:text="${token.estimatedWaitMinutes + ' min'}">10 min</td>
                         <td th:text="${#temporals.format(token.issuedAt, 'dd MMM yyyy HH:mm')}">30 Apr 2026 10:00</td>
                         <td>
                             <div class="d-flex gap-2" th:if="${token.status.name() == 'CALLED'}">
@@ -101,7 +110,7 @@
                         </td>
                     </tr>
                     <tr th:if="${#lists.isEmpty(recentTokens)}">
-                        <td colspan="7" class="text-center text-muted py-4">No tokens yet.</td>
+                        <td colspan="8" class="text-center text-muted py-4">No tokens yet.</td>
                     </tr>
                     </tbody>
                 </table>
@@ -111,5 +120,6 @@
 </main>
 <div th:replace="~{fragments/footer :: footer}"></div>
 <script th:src="@{/webjars/bootstrap/js/bootstrap.bundle.min.js}"></script>
+<script th:src="@{/js/app.js}"></script>
 </body>
 </html>

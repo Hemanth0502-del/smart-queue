@@ -11,10 +11,11 @@
 <div th:replace="~{fragments/header :: header}"></div>
 
 <main class="page-shell">
-    <section class="container py-5">
+    <section class="container auth-shell py-5">
         <div class="row justify-content-center">
             <div class="col-md-7 col-lg-5">
-                <div class="surface-panel p-4">
+                <div class="surface-panel p-4 p-md-5">
+                    <p class="section-kicker mb-2">Secure access</p>
                     <h1 class="h4 fw-semibold mb-4">Login</h1>
                     <div th:if="${registered}" class="alert alert-light border">Registration complete. Please log in.</div>
                     <div th:if="${param.error}" class="alert alert-light border text-danger">Invalid username or password.</div>
@@ -30,9 +31,11 @@
                         </div>
                         <button type="submit" class="btn btn-dark w-100">Login</button>
                     </form>
-                    <p class="text-muted small mt-3 mb-0">Admin: admin@smartqueue.local / admin123</p>
-                    <p class="text-muted small mb-0">Staff: staff@smartqueue.local / staff123</p>
-                    <p class="small mt-3 mb-0">Need an account? <a class="link-dark" th:href="@{/register}">Register as user</a></p>
+                    <div class="empty-state mt-4 py-3">
+                        <p class="text-muted small mb-1">Admin: admin@smartqueue.local / admin123</p>
+                        <p class="text-muted small mb-0">Staff: staff@smartqueue.local / staff123</p>
+                    </div>
+                    <p class="small mt-3 mb-0 text-center">Need an account? <a class="link-dark fw-semibold" th:href="@{/register}">Register as user</a></p>
                 </div>
             </div>
         </div>
@@ -41,5 +44,6 @@
 
 <div th:replace="~{fragments/footer :: footer}"></div>
 <script th:src="@{/webjars/bootstrap/js/bootstrap.bundle.min.js}"></script>
+<script th:src="@{/js/app.js}"></script>
 </body>
 </html>

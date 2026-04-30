@@ -377,6 +377,11 @@ td.text-center.text-muted {
     min-height: calc(100vh - 120px);
     display: flex;
     align-items: center;
+    justify-content: center;
+}
+
+.auth-shell > .row {
+    width: 100%;
 }
 
 .section-kicker {

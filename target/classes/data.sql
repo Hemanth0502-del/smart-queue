@@ -1,10 +1,17 @@
-INSERT IGNORE INTO categories (name, description, active, created_at) VALUES
-('Hospital', 'Patient registration, consultation, pharmacy, and billing queues.', true, CURRENT_TIMESTAMP),
-('Bank', 'Account, cash, loan, and customer service queues.', true, CURRENT_TIMESTAMP),
-('College', 'Admissions, fee payment, examination, and student support queues.', true, CURRENT_TIMESTAMP),
-('Government Office', 'Citizen services, documentation, verification, and help desk queues.', true, CURRENT_TIMESTAMP),
-('Restaurant', 'Dine-in, takeaway, billing, and reservation queues.', true, CURRENT_TIMESTAMP),
-('Service Center', 'Repair intake, diagnostics, billing, and delivery queues.', true, CURRENT_TIMESTAMP);
+INSERT IGNORE INTO categories (name, description, token_prefix, active, created_at) VALUES
+('Hospital', 'Patient registration, consultation, pharmacy, and billing queues.', 'HOS', true, CURRENT_TIMESTAMP),
+('Bank', 'Account, cash, loan, and customer service queues.', 'BNK', true, CURRENT_TIMESTAMP),
+('College', 'Admissions, fee payment, examination, and student support queues.', 'COL', true, CURRENT_TIMESTAMP),
+('Government Office', 'Citizen services, documentation, verification, and help desk queues.', 'GOV', true, CURRENT_TIMESTAMP),
+('Restaurant', 'Dine-in, takeaway, billing, and reservation queues.', 'RES', true, CURRENT_TIMESTAMP),
+('Service Center', 'Repair intake, diagnostics, billing, and delivery queues.', 'SVC', true, CURRENT_TIMESTAMP);
+
+UPDATE categories SET token_prefix = 'HOS' WHERE name = 'Hospital' AND token_prefix IS NULL;
+UPDATE categories SET token_prefix = 'BNK' WHERE name = 'Bank' AND token_prefix IS NULL;
+UPDATE categories SET token_prefix = 'COL' WHERE name = 'College' AND token_prefix IS NULL;
+UPDATE categories SET token_prefix = 'GOV' WHERE name = 'Government Office' AND token_prefix IS NULL;
+UPDATE categories SET token_prefix = 'RES' WHERE name = 'Restaurant' AND token_prefix IS NULL;
+UPDATE categories SET token_prefix = 'SVC' WHERE name = 'Service Center' AND token_prefix IS NULL;
 
 INSERT IGNORE INTO counters (name, code, category_id, status, average_service_time_in_minutes, active) VALUES
 ('Registration Desk', 'HOS-C01', (SELECT id FROM categories WHERE name = 'Hospital'), 'OPEN', 8, true),
