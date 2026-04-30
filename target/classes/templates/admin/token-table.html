@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+<section th:fragment="tokenTable(tokens)" class="surface-panel p-4">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead><tr><th>Token</th><th>User</th><th>Category</th><th>Counter</th><th>Priority</th><th>Status</th><th>Issued</th></tr></thead>
+            <tbody>
+            <tr th:each="token : ${tokens}">
+                <td class="fw-semibold" th:text="${token.tokenNumber}">HOS-001</td>
+                <td th:text="${token.user.fullName}">User</td>
+                <td th:text="${token.category.name}">Hospital</td>
+                <td th:text="${token.counter != null ? token.counter.code : '-'}">-</td>
+                <td th:text="${token.priorityType}">NORMAL</td>
+                <td><span class="badge text-bg-light border" th:text="${token.status}">WAITING</span></td>
+                <td th:text="${#temporals.format(token.issuedAt, 'dd MMM yyyy HH:mm')}">30 Apr 2026 10:00</td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(tokens)}">
+                <td colspan="7" class="text-center text-muted py-4">No tokens found.</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+</body>
+</html>

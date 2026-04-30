@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Categories | Smart Queue Management System</title>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+<div class="admin-layout">
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    <main class="admin-content">
+        <div class="container-fluid py-4">
+            <div class="d-flex flex-column flex-md-row justify-content-between gap-3 align-items-md-center mb-4">
+                <div>
+                    <p class="text-uppercase text-muted small fw-semibold mb-1">Admin Management</p>
+                    <h1 class="h3 fw-semibold mb-0">Categories</h1>
+                </div>
+                <a class="btn btn-outline-dark" th:href="@{/admin/dashboard}">Dashboard</a>
+            </div>
+
+            <div th:if="${successMessage}" class="alert alert-light border" th:text="${successMessage}"></div>
+            <div th:if="${errorMessage}" class="alert alert-light border text-danger" th:text="${errorMessage}"></div>
+
+            <div class="surface-panel p-4 mb-4">
+                <h2 class="h5 fw-semibold mb-3" th:text="${editingCategoryId == null ? 'Add Category' : 'Edit Category'}">Add Category</h2>
+                <form class="row g-3" th:object="${categoryForm}"
+                      th:action="${editingCategoryId == null ? '/admin/categories' : '/admin/categories/' + editingCategoryId}"
+                      method="post" novalidate>
+                    <div class="col-md-4">
+                        <label class="form-label" for="name">Name</label>
+                        <input class="form-control" id="name" th:field="*{name}" required>
+                        <div class="text-danger small mt-1" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="description">Description</label>
+                        <input class="form-control" id="description" th:field="*{description}">
+                        <div class="text-danger small mt-1" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></div>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end gap-2">
+                        <button class="btn btn-dark w-100" type="submit" th:text="${editingCategoryId == null ? 'Add' : 'Save'}">Add</button>
+                        <a th:if="${editingCategoryId != null}" class="btn btn-outline-dark" th:href="@{/admin/categories}">Cancel</a>
+                    </div>
+                </form>
+            </div>
+
+            <div class="surface-panel p-4">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="category : ${categories}">
+                            <td class="fw-semibold" th:text="${category.name}">Hospital</td>
+                            <td th:text="${category.description} ?: '-'">Description</td>
+                            <td>
+                                <span class="badge text-bg-light border" th:text="${category.active ? 'Active' : 'Inactive'}">Active</span>
+                            </td>
+                            <td th:text="${#temporals.format(category.createdAt, 'dd MMM yyyy HH:mm')}">30 Apr 2026</td>
+                            <td>
+                                <div class="d-flex justify-content-end gap-2">
+                                    <a class="btn btn-outline-dark btn-sm" th:href="@{/admin/categories/{id}/edit(id=${category.id})}">Edit</a>
+                                    <form th:if="${category.active}" th:action="@{/admin/categories/{id}/deactivate(id=${category.id})}" method="post">
+                                        <button class="btn btn-outline-dark btn-sm" type="submit">Deactivate</button>
+                                    </form>
+                                    <form th:unless="${category.active}" th:action="@{/admin/categories/{id}/activate(id=${category.id})}" method="post">
+                                        <button class="btn btn-dark btn-sm" type="submit">Activate</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(categories)}">
+                            <td colspan="5" class="text-center text-muted py-4">No categories found.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+<script th:src="@{/webjars/bootstrap/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

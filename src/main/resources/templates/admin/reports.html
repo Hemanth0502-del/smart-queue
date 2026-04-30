@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Reports | Smart Queue Management System</title>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+<div class="admin-layout">
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    <main class="admin-content reports-page">
+        <div class="container-fluid py-4">
+            <div class="d-flex flex-column flex-xl-row justify-content-between gap-3 align-items-xl-center mb-4">
+                <div>
+                    <p class="text-uppercase text-muted small fw-semibold mb-1">Admin Analytics</p>
+                    <h1 class="h3 fw-semibold mb-0">Reports Dashboard</h1>
+                </div>
+                <button class="btn btn-outline-dark no-print" type="button" onclick="window.print()">Print Report</button>
+            </div>
+
+            <div class="surface-panel p-4 mb-4 no-print">
+                <form class="row g-3 align-items-end" th:action="@{/admin/reports}" method="get">
+                    <div class="col-md-3">
+                        <label class="form-label" for="date">Date</label>
+                        <input class="form-control" id="date" name="date" type="date" th:value="${report.reportDate()}">
+                    </div>
+                    <div class="col-md-5">
+                        <label class="form-label" for="categoryId">Category</label>
+                        <select class="form-select" id="categoryId" name="categoryId">
+                            <option value="">All Categories</option>
+                            <option th:each="category : ${report.categories()}"
+                                    th:value="${category.id}"
+                                    th:selected="${report.categoryId() != null and report.categoryId() == category.id}"
+                                    th:text="${category.name}">Hospital</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <button class="btn btn-dark w-100" type="submit">Apply</button>
+                    </div>
+                    <div class="col-md-2">
+                        <a class="btn btn-outline-dark w-100" th:href="@{/admin/reports}">Reset</a>
+                    </div>
+                </form>
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-sm-6 col-xl">
+                    <div class="dashboard-card">
+                        <div class="text-muted small">Total Tokens Today</div>
+                        <div class="metric" th:text="${report.totalTokensToday()}">0</div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl">
+                    <div class="dashboard-card">
+                        <div class="text-muted small">Completed Today</div>
+                        <div class="metric" th:text="${report.completedTokensToday()}">0</div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl">
+                    <div class="dashboard-card">
+                        <div class="text-muted small">Skipped Today</div>
+                        <div class="metric" th:text="${report.skippedTokensToday()}">0</div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl">
+                    <div class="dashboard-card">
+                        <div class="text-muted small">Waiting Tokens</div>
+                        <div class="metric" th:text="${report.waitingTokens()}">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4 mb-4">
+                <div class="col-xl-6">
+                    <section class="surface-panel p-4 chart-panel">
+                        <h2 class="h5 fw-semibold mb-3">Category-wise Token Count</h2>
+                        <canvas id="categoryChart" height="150"></canvas>
+                    </section>
+                </div>
+                <div class="col-xl-6">
+                    <section class="surface-panel p-4 chart-panel">
+                        <h2 class="h5 fw-semibold mb-3">Counter-wise Service Count</h2>
+                        <canvas id="counterServiceChart" height="150"></canvas>
+                    </section>
+                </div>
+                <div class="col-xl-12">
+                    <section class="surface-panel p-4 chart-panel">
+                        <h2 class="h5 fw-semibold mb-3">Average Service Time by Counter</h2>
+                        <canvas id="averageServiceChart" height="95"></canvas>
+                    </section>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-xl-6">
+                    <section class="surface-panel p-4">
+                        <h2 class="h5 fw-semibold mb-3">Category Details</h2>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead><tr><th>Category</th><th class="text-end">Token Count</th></tr></thead>
+                                <tbody>
+                                <tr th:each="row : ${report.categoryTokenCounts()}">
+                                    <td class="fw-semibold" th:text="${row.categoryName()}">Hospital</td>
+                                    <td class="text-end" th:text="${row.tokenCount()}">0</td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(report.categoryTokenCounts())}">
+                                    <td colspan="2" class="text-center text-muted py-4">No category data for this filter.</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+
+                <div class="col-xl-6">
+                    <section class="surface-panel p-4">
+                        <h2 class="h5 fw-semibold mb-3">Counter Details</h2>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead><tr><th>Counter</th><th>Category</th><th class="text-end">Services</th><th class="text-end">Avg Time</th></tr></thead>
+                                <tbody>
+                                <tr th:each="row : ${report.counterServiceCounts()}">
+                                    <td class="fw-semibold" th:text="${row.counterCode() + ' - ' + row.counterName()}">HOS-C01</td>
+                                    <td th:text="${row.categoryName()}">Hospital</td>
+                                    <td class="text-end" th:text="${row.serviceCount()}">0</td>
+                                    <td class="text-end" th:text="${#numbers.formatDecimal(row.averageServiceMinutes(), 1, 1) + ' min'}">0 min</td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(report.counterServiceCounts())}">
+                                    <td colspan="4" class="text-center text-muted py-4">No counter data for this filter.</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+
+                <div class="col-12">
+                    <section class="surface-panel p-4">
+                        <h2 class="h5 fw-semibold mb-3">Token Details</h2>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead>
+                                <tr><th>Token</th><th>User</th><th>Category</th><th>Counter</th><th>Status</th><th>Issued</th><th>Completed</th></tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="token : ${report.detailedTokens()}">
+                                    <td class="fw-semibold" th:text="${token.tokenNumber}">HOS-001</td>
+                                    <td th:text="${token.user.fullName}">User</td>
+                                    <td th:text="${token.category.name}">Hospital</td>
+                                    <td th:text="${token.counter != null ? token.counter.code : '-'}">-</td>
+                                    <td><span class="badge text-bg-light border" th:text="${token.status}">WAITING</span></td>
+                                    <td th:text="${#temporals.format(token.issuedAt, 'dd MMM yyyy HH:mm')}">30 Apr 2026 10:00</td>
+                                    <td th:text="${token.completedAt != null ? #temporals.format(token.completedAt, 'dd MMM yyyy HH:mm') : '-'}">-</td>
+                                </tr>
+                                <tr th:if="${#lists.isEmpty(report.detailedTokens())}">
+                                    <td colspan="7" class="text-center text-muted py-4">No tokens found for this filter.</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script th:inline="javascript">
+    const categoryLabels = /*[[${report.categoryLabels()}]]*/ [];
+    const categoryCounts = /*[[${report.categoryCounts()}]]*/ [];
+    const counterLabels = /*[[${report.counterLabels()}]]*/ [];
+    const counterServiceCounts = /*[[${report.counterServiceCountsData()}]]*/ [];
+    const averageServiceTimes = /*[[${report.averageServiceMinutesData()}]]*/ [];
+
+    const chartColors = {
+        black: "#111111",
+        gray: "#6c757d",
+        lightGray: "#e8e8e8",
+        grid: "#eeeeee"
+    };
+
+    const baseOptions = {
+        responsive: true,
+        plugins: {
+            legend: {
+                labels: { color: chartColors.black }
+            }
+        },
+        scales: {
+            x: { ticks: { color: chartColors.gray }, grid: { color: chartColors.grid } },
+            y: { beginAtZero: true, ticks: { color: chartColors.gray, precision: 0 }, grid: { color: chartColors.grid } }
+        }
+    };
+
+    new Chart(document.getElementById("categoryChart"), {
+        type: "bar",
+        data: {
+            labels: categoryLabels,
+            datasets: [{ label: "Tokens", data: categoryCounts, backgroundColor: chartColors.black }]
+        },
+        options: baseOptions
+    });
+
+    new Chart(document.getElementById("counterServiceChart"), {
+        type: "bar",
+        data: {
+            labels: counterLabels,
+            datasets: [{ label: "Completed Services", data: counterServiceCounts, backgroundColor: chartColors.gray }]
+        },
+        options: baseOptions
+    });
+
+    new Chart(document.getElementById("averageServiceChart"), {
+        type: "line",
+        data: {
+            labels: counterLabels,
+            datasets: [{
+                label: "Average Minutes",
+                data: averageServiceTimes,
+                borderColor: chartColors.black,
+                backgroundColor: chartColors.lightGray,
+                pointBackgroundColor: chartColors.black,
+                tension: 0.2
+            }]
+        },
+        options: baseOptions
+    });
+</script>
+<script th:src="@{/webjars/bootstrap/js/bootstrap.bundle.min.js}"></script>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

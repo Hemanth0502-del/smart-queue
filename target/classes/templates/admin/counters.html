@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Counters | Smart Queue Management System</title>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+<div class="admin-layout">
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    <main class="admin-content">
+        <div class="container-fluid py-4">
+            <div class="d-flex flex-column flex-md-row justify-content-between gap-3 align-items-md-center mb-4">
+                <div>
+                    <p class="text-uppercase text-muted small fw-semibold mb-1">Admin Management</p>
+                    <h1 class="h3 fw-semibold mb-0">Counters</h1>
+                </div>
+                <a class="btn btn-outline-dark" th:href="@{/admin/dashboard}">Dashboard</a>
+            </div>
+
+            <div th:if="${successMessage}" class="alert alert-light border" th:text="${successMessage}"></div>
+            <div th:if="${errorMessage}" class="alert alert-light border text-danger" th:text="${errorMessage}"></div>
+
+            <div class="surface-panel p-4 mb-4">
+                <h2 class="h5 fw-semibold mb-3" th:text="${editingCounterId == null ? 'Add Counter' : 'Edit Counter'}">Add Counter</h2>
+                <form class="row g-3" th:object="${counterForm}"
+                      th:action="${editingCounterId == null ? '/admin/counters' : '/admin/counters/' + editingCounterId}"
+                      method="post" novalidate>
+                    <div class="col-md-3">
+                        <label class="form-label" for="name">Name</label>
+                        <input class="form-control" id="name" th:field="*{name}" required>
+                        <div class="text-danger small mt-1" th:if="${#fields.hasErrors('name')}" th:errors="*{name}"></div>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label" for="code">Code</label>
+                        <input class="form-control" id="code" th:field="*{code}" required>
+                        <div class="text-danger small mt-1" th:if="${#fields.hasErrors('code')}" th:errors="*{code}"></div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label" for="categoryId">Category</label>
+                        <select class="form-select" id="categoryId" th:field="*{categoryId}" required>
+                            <option value="">Select category</option>
+                            <option th:each="category : ${categories}" th:value="${category.id}" th:text="${category.name}">Hospital</option>
+                        </select>
+                        <div class="text-danger small mt-1" th:if="${#fields.hasErrors('categoryId')}" th:errors="*{categoryId}"></div>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label" for="status">Status</label>
+                        <select class="form-select" id="status" th:field="*{status}">
+                            <option th:each="status : ${statuses}" th:value="${status}" th:text="${status}">OPEN</option>
+                        </select>
+                        <div class="text-danger small mt-1" th:if="${#fields.hasErrors('status')}" th:errors="*{status}"></div>
+                    </div>
+                    <div class="col-md-1">
+                        <label class="form-label" for="averageServiceTimeInMinutes">Min</label>
+                        <input class="form-control" id="averageServiceTimeInMinutes" th:field="*{averageServiceTimeInMinutes}" type="number" min="1">
+                        <div class="text-danger small mt-1" th:if="${#fields.hasErrors('averageServiceTimeInMinutes')}" th:errors="*{averageServiceTimeInMinutes}"></div>
+                    </div>
+                    <div class="col-md-1 d-flex align-items-end gap-2">
+                        <button class="btn btn-dark w-100" type="submit" th:text="${editingCounterId == null ? 'Add' : 'Save'}">Add</button>
+                        <a th:if="${editingCounterId != null}" class="btn btn-outline-dark" th:href="@{/admin/counters}">Cancel</a>
+                    </div>
+                </form>
+            </div>
+
+            <div class="surface-panel p-4">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Name</th>
+                            <th>Category</th>
+                            <th>Status</th>
+                            <th>Active</th>
+                            <th>Avg Time</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="counter : ${counters}">
+                            <td class="fw-semibold" th:text="${counter.code}">HOS-C01</td>
+                            <td th:text="${counter.name}">Registration Desk</td>
+                            <td th:text="${counter.category.name}">Hospital</td>
+                            <td><span class="badge text-bg-light border" th:text="${counter.status}">OPEN</span></td>
+                            <td th:text="${counter.active ? 'Yes' : 'No'}">Yes</td>
+                            <td th:text="${counter.averageServiceTimeInMinutes + ' min'}">10 min</td>
+                            <td>
+                                <div class="d-flex justify-content-end gap-2 flex-wrap">
+                                    <a class="btn btn-outline-dark btn-sm" th:href="@{/admin/counters/{id}/edit(id=${counter.id})}">Edit</a>
+                                    <form th:action="@{/admin/counters/{id}/open(id=${counter.id})}" method="post">
+                                        <button class="btn btn-outline-dark btn-sm" type="submit">Open</button>
+                                    </form>
+                                    <form th:action="@{/admin/counters/{id}/pause(id=${counter.id})}" method="post">
+                                        <button class="btn btn-outline-dark btn-sm" type="submit">Pause</button>
+                                    </form>
+                                    <form th:action="@{/admin/counters/{id}/close(id=${counter.id})}" method="post">
+                                        <button class="btn btn-dark btn-sm" type="submit">Close</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(counters)}">
+                            <td colspan="7" class="text-center text-muted py-4">No counters found.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+<script th:src="@{/webjars/bootstrap/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

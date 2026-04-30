@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Access Denied | Smart Queue Management System</title>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+<main class="page-shell">
+    <section class="container py-5">
+        <div class="surface-panel p-5 text-center mx-auto" style="max-width: 620px;">
+            <p class="text-uppercase text-muted small fw-semibold mb-2">403</p>
+            <h1 class="h3 fw-semibold">Access Denied</h1>
+            <p class="text-secondary mb-4">Your account does not have permission to open this page.</p>
+            <a class="btn btn-dark" th:href="@{/}">Go Home</a>
+        </div>
+    </section>
+</main>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/webjars/bootstrap/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

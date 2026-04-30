@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Token Status | Smart Queue Management System</title>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+<main class="page-shell">
+    <section class="container py-5">
+        <div class="surface-panel p-4">
+            <h1 class="h4 fw-semibold mb-3">Token Status</h1>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead><tr><th>Token</th><th>Category</th><th>Counter</th><th>Status</th><th>Issued</th></tr></thead>
+                    <tbody>
+                    <tr th:each="token : ${tokens}">
+                        <td class="fw-semibold" th:text="${token.tokenNumber}">HOS-001</td>
+                        <td th:text="${token.category.name}">Hospital</td>
+                        <td th:text="${token.counter != null ? token.counter.code : '-'}">-</td>
+                        <td><span class="badge text-bg-light border" th:text="${token.status}">WAITING</span></td>
+                        <td th:text="${#temporals.format(token.issuedAt, 'dd MMM yyyy HH:mm')}">30 Apr 2026 10:00</td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(tokens)}">
+                        <td colspan="5" class="text-center text-muted py-4">No tokens found.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+</main>
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script th:src="@{/webjars/bootstrap/js/bootstrap.bundle.min.js}"></script>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

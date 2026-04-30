@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Admin Dashboard | Smart Queue Management System</title>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+
+<div class="admin-layout">
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    <main class="admin-content">
+        <div class="container-fluid py-4">
+            <div class="d-flex flex-column flex-md-row justify-content-between gap-3 align-items-md-center mb-4">
+                <div>
+                    <p class="text-uppercase text-muted small fw-semibold mb-1">Overview</p>
+                    <h1 class="h3 fw-semibold mb-0">Dashboard</h1>
+                </div>
+                <a class="btn btn-outline-dark" th:href="@{/}">Create Public Ticket</a>
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-sm-6 col-xl">
+                    <div class="dashboard-card">
+                        <div class="text-muted small">Total Tokens</div>
+                        <div class="metric" th:text="${stats.totalTokens()}">0</div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl">
+                    <div class="dashboard-card">
+                        <div class="text-muted small">Waiting</div>
+                        <div class="metric" th:text="${stats.waitingTokens()}">0</div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl">
+                    <div class="dashboard-card">
+                        <div class="text-muted small">Serving</div>
+                        <div class="metric" th:text="${stats.servingTokens()}">0</div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl">
+                    <div class="dashboard-card">
+                        <div class="text-muted small">Completed</div>
+                        <div class="metric" th:text="${stats.completedTokens()}">0</div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-xl">
+                    <div class="dashboard-card">
+                        <div class="text-muted small">Active Counters</div>
+                        <div class="metric" th:text="${stats.activeCounters()}">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <section id="tickets" class="surface-panel p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h2 class="h5 fw-semibold mb-0">Recent Tokens</h2>
+                    <span class="badge text-bg-light border">Live queue</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                        <tr>
+                            <th>Token</th>
+                            <th>User</th>
+                            <th>Category</th>
+                            <th>Status</th>
+                            <th>Issued</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="token : ${recentTokens}">
+                            <td class="fw-semibold" th:text="${token.tokenNumber}">HOS-00001</td>
+                            <td th:text="${token.user.fullName}">Customer</td>
+                            <td th:text="${token.category.name}">Hospital</td>
+                            <td><span class="badge text-bg-light border" th:text="${token.status}">WAITING</span></td>
+                            <td th:text="${#temporals.format(token.issuedAt, 'dd MMM yyyy HH:mm')}">30 Apr 2026 10:00</td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(recentTokens)}">
+                            <td colspan="5" class="text-center text-muted py-4">No tokens created yet.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="counters" class="surface-panel p-4 mt-4">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+                    <div>
+                        <h2 class="h5 fw-semibold mb-1">Management Shortcuts</h2>
+                        <p class="text-muted mb-0">Open the core admin tools for category, counter, and queue control.</p>
+                    </div>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a class="btn btn-outline-dark" th:href="@{/admin/categories}">Categories</a>
+                        <a class="btn btn-outline-dark" th:href="@{/admin/counters}">Counters</a>
+                        <a class="btn btn-outline-dark" th:href="@{/admin/tokens}">Tokens</a>
+                        <a class="btn btn-dark" th:href="@{/admin/reports}">Reports</a>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+</div>
+
+<script th:src="@{/webjars/bootstrap/js/bootstrap.bundle.min.js}"></script>
+<script th:src="@{/js/app.js}"></script>
+</body>
+</html>

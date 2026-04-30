@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+<aside th:fragment="sidebar" class="admin-sidebar border-end bg-white">
+    <div class="px-3 py-4">
+        <div class="text-uppercase small text-muted fw-semibold mb-3">Admin Panel</div>
+        <nav class="nav flex-column gap-1">
+            <a class="nav-link active" th:href="@{/admin/dashboard}">Dashboard</a>
+            <a class="nav-link" th:href="@{/admin/categories}">Categories</a>
+            <a class="nav-link" th:href="@{/admin/counters}">Counters</a>
+            <a class="nav-link" th:href="@{/admin/tokens}">Tokens</a>
+            <a class="nav-link" th:href="@{/admin/reports}">Reports</a>
+            <a class="nav-link" th:href="@{/admin/users}">Users</a>
+        </nav>
+    </div>
+</aside>
+</body>
+</html>

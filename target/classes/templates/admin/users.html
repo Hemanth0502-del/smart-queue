@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Users | Smart Queue Management System</title>
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/css/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<div th:replace="~{fragments/header :: header}"></div>
+<div class="admin-layout">
+    <div th:replace="~{fragments/sidebar :: sidebar}"></div>
+    <main class="admin-content">
+        <div class="container-fluid py-4">
+            <h1 class="h3 fw-semibold mb-4">Users</h1>
+            <div class="surface-panel p-4">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="user : ${users}">
+                            <td class="fw-semibold" th:text="${user.fullName}">System Administrator</td>
+                            <td th:text="${user.email}">admin@smartqueue.local</td>
+                            <td th:text="${user.phone} ?: '-'">-</td>
+                            <td><span class="badge text-bg-light border" th:text="${user.role}">ADMIN</span></td>
+                            <td th:text="${user.active ? 'Active' : 'Inactive'}">Active</td>
+                            <td th:text="${#temporals.format(user.createdAt, 'dd MMM yyyy HH:mm')}">30 Apr 2026</td>
+                        </tr>
+                        <tr th:if="${#lists.isEmpty(users)}">
+                            <td colspan="6" class="text-center text-muted py-4">No users found.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+<script th:src="@{/webjars/bootstrap/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>
