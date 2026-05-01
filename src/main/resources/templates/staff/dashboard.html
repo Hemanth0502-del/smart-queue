@@ -48,18 +48,28 @@
                             <div class="fw-semibold" th:text="${status.nextWaitingToken().isPresent() ? status.nextWaitingToken().get().estimatedWaitMinutes + ' min' : '-'}">8 min</div>
                         </div>
                     </div>
-                    <div class="d-flex flex-wrap gap-2 mt-3">
-                        <form th:action="@{/staff/counters/{id}/call-next(id=${status.counter().id})}" method="post">
+                    <div class="d-flex flex-wrap gap-2 mt-3" th:with="calledToken=${status.calledToken().orElse(null)}">
+                        <form th:action="@{/staff/counters/{id}/call-next(id=${status.counter().id})}" method="post"
+                              th:if="${calledToken == null}">
                             <button class="btn btn-dark btn-sm" type="submit">Call Next</button>
                         </form>
-                        <form th:action="@{/staff/counters/{id}/recall(id=${status.counter().id})}" method="post">
+                        <form th:action="@{/staff/counters/{id}/recall(id=${status.counter().id})}" method="post"
+                              th:if="${calledToken != null}">
                             <button class="btn btn-outline-dark btn-sm" type="submit">Recall</button>
+                        </form>
+                        <form th:action="@{/staff/tokens/{id}/skip(id=${calledToken.id})}" method="post"
+                              th:if="${calledToken != null}">
+                            <button class="btn btn-outline-dark btn-sm" type="submit">Skip</button>
+                        </form>
+                        <form th:action="@{/staff/tokens/{id}/complete(id=${calledToken.id})}" method="post"
+                              th:if="${calledToken != null}">
+                            <button class="btn btn-dark btn-sm" type="submit">Complete</button>
                         </form>
                     </div>
                 </div>
             </div>
             <div class="col-12" th:if="${#lists.isEmpty(counterStatuses)}">
-                <div class="surface-panel p-4 text-muted">No counters assigned to this staff account.</div>
+                <div class="surface-panel p-4 text-muted">No waiting tokens for your counters.</div>
             </div>
         </div>
 
@@ -76,7 +86,7 @@
                         <td th:text="${categoryStatus.completedCount()}">0</td>
                     </tr>
                     <tr th:if="${#lists.isEmpty(categoryStatuses)}">
-                        <td colspan="4" class="text-center text-muted py-4">No categories found.</td>
+                        <td colspan="4" class="text-center text-muted py-4">No categories with waiting tokens.</td>
                     </tr>
                     </tbody>
                 </table>
@@ -84,12 +94,12 @@
         </div>
 
         <div class="surface-panel p-4">
-            <h2 class="h5 fw-semibold mb-3">Recent Tokens</h2>
+            <h2 class="h5 fw-semibold mb-3">Waiting Tokens</h2>
             <div class="table-responsive">
                 <table class="table table-hover align-middle">
-                    <thead><tr><th>Token</th><th>Priority</th><th>Category</th><th>Counter</th><th>Status</th><th>Wait</th><th>Issued</th><th>Actions</th></tr></thead>
+                    <thead><tr><th>Token</th><th>Priority</th><th>Category</th><th>Counter</th><th>Status</th><th>Wait</th><th>Issued</th></tr></thead>
                     <tbody>
-                    <tr th:each="token : ${recentTokens}">
+                    <tr th:each="token : ${waitingTokens}">
                         <td class="fw-semibold" th:text="${token.tokenNumber}">HOS-001</td>
                         <td th:text="${token.priorityType}">NORMAL</td>
                         <td th:text="${token.category.name}">Hospital</td>
@@ -97,20 +107,9 @@
                         <td><span class="badge text-bg-light border" th:text="${token.status}">WAITING</span></td>
                         <td th:text="${token.estimatedWaitMinutes + ' min'}">10 min</td>
                         <td th:text="${#temporals.format(token.issuedAt, 'dd MMM yyyy HH:mm')}">30 Apr 2026 10:00</td>
-                        <td>
-                            <div class="d-flex gap-2" th:if="${token.status.name() == 'CALLED'}">
-                                <form th:action="@{/staff/tokens/{id}/skip(id=${token.id})}" method="post">
-                                    <button class="btn btn-outline-dark btn-sm" type="submit">Skip</button>
-                                </form>
-                                <form th:action="@{/staff/tokens/{id}/complete(id=${token.id})}" method="post">
-                                    <button class="btn btn-dark btn-sm" type="submit">Complete</button>
-                                </form>
-                            </div>
-                            <span th:unless="${token.status.name() == 'CALLED'}" class="text-muted small">No action</span>
-                        </td>
                     </tr>
-                    <tr th:if="${#lists.isEmpty(recentTokens)}">
-                        <td colspan="8" class="text-center text-muted py-4">No tokens yet.</td>
+                    <tr th:if="${#lists.isEmpty(waitingTokens)}">
+                        <td colspan="7" class="text-center text-muted py-4">No waiting tokens.</td>
                     </tr>
                     </tbody>
                 </table>
@@ -121,5 +120,6 @@
 <div th:replace="~{fragments/footer :: footer}"></div>
 <script th:src="@{/webjars/bootstrap/js/bootstrap.bundle.min.js}"></script>
 <script th:src="@{/js/app.js}"></script>
+<script th:src="@{/js/staff-dashboard.js}"></script>
 </body>
 </html>

@@ -21,6 +21,7 @@ import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Predicate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -122,6 +123,21 @@ public class TokenService {
     }
 
     @Transactional(readOnly = true)
+    public List<Token> waitingTokensForStaff(String staffEmail) {
+        Set<Long> assignedCounterIds = assignedCounters(staffEmail).stream()
+                .map(Counter::getId)
+                .collect(java.util.stream.Collectors.toSet());
+
+        if (assignedCounterIds.isEmpty()) {
+            return List.of();
+        }
+
+        return waitingTokens().stream()
+                .filter(token -> token.getCounter() != null && assignedCounterIds.contains(token.getCounter().getId()))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
     public List<Counter> assignedCounters(String staffEmail) {
         return counterRepository.findByAssignedStaffEmailAndActiveTrue(staffEmail);
     }
@@ -135,6 +151,7 @@ public class TokenService {
                         nextSmartTokenForCounter(counter),
                         tokenRepository.countByCounterIdAndStatus(counter.getId(), TokenStatus.WAITING)
                 ))
+                .filter(status -> status.waitingCount() > 0 || status.calledToken().isPresent())
                 .toList();
     }
 
@@ -147,6 +164,7 @@ public class TokenService {
                         tokenRepository.countByCategoryIdAndStatus(category.getId(), TokenStatus.CALLED),
                         tokenRepository.countByCategoryIdAndStatus(category.getId(), TokenStatus.COMPLETED)
                 ))
+                .filter(status -> status.waitingCount() > 0)
                 .toList();
     }
 
