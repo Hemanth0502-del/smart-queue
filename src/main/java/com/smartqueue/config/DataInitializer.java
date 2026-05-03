@@ -1,6 +1,19 @@
 package com.smartqueue.config;
 
-
+import com.smartqueue.entity.Category;
+import com.smartqueue.entity.Role;
+import com.smartqueue.entity.User;
+import com.smartqueue.repository.CategoryRepository;
+import com.smartqueue.repository.CounterRepository;
+import com.smartqueue.repository.UserRepository;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
 public class DataInitializer {
