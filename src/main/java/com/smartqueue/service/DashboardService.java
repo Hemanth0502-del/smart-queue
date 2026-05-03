@@ -12,11 +12,14 @@ public class DashboardService {
 
     private final TokenRepository tokenRepository;
     private final CounterRepository counterRepository;
+    private final AccessControlService accessControlService;
 
     public DashboardService(TokenRepository tokenRepository,
-                            CounterRepository counterRepository) {
+                            CounterRepository counterRepository,
+                            AccessControlService accessControlService) {
         this.tokenRepository = tokenRepository;
         this.counterRepository = counterRepository;
+        this.accessControlService = accessControlService;
     }
 
     @Transactional(readOnly = true)
@@ -28,5 +31,20 @@ public class DashboardService {
                 tokenRepository.countByStatus(TokenStatus.COMPLETED),
                 counterRepository.countByActiveTrue()
         );
+    }
+
+    private DashboardStats getStatsForCategory(Long categoryId) {
+        return new DashboardStats(
+                tokenRepository.countByCategoryId(categoryId),
+                tokenRepository.countByCategoryIdAndStatus(categoryId, TokenStatus.WAITING),
+                tokenRepository.countByCategoryIdAndStatus(categoryId, TokenStatus.CALLED),
+                tokenRepository.countByCategoryIdAndStatus(categoryId, TokenStatus.COMPLETED),
+                counterRepository.countByCategoryIdAndActiveTrue(categoryId)
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public DashboardStats getStatsForAssignedCategory(String email) {
+        return getStatsForCategory(accessControlService.assignedCategoryId(email));
     }
 }

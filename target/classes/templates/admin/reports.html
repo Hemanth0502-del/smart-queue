@@ -29,19 +29,14 @@
                     </div>
                     <div class="col-md-5">
                         <label class="form-label" for="categoryId">Category</label>
-                        <select class="form-select" id="categoryId" name="categoryId">
-                            <option value="">All Categories</option>
-                            <option th:each="category : ${report.categories()}"
-                                    th:value="${category.id}"
-                                    th:selected="${report.categoryId() != null and report.categoryId() == category.id}"
-                                    th:text="${category.name}">Hospital</option>
-                        </select>
+                        <input type="hidden" id="categoryId" name="categoryId" th:value="${report.categoryId()}">
+                        <div class="form-control bg-light" th:text="${assignedCategory != null ? assignedCategory.name : 'Assigned category'}">Hospital</div>
                     </div>
                     <div class="col-md-2">
                         <button class="btn btn-dark w-100" type="submit">Apply</button>
                     </div>
                     <div class="col-md-2">
-                        <a class="btn btn-outline-dark w-100" th:href="@{/admin/reports}">Reset</a>
+                        <a class="btn btn-outline-dark w-100" th:href="@{/admin/reports}">Reset Date</a>
                     </div>
                 </form>
             </div>

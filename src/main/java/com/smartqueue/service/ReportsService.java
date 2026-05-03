@@ -18,6 +18,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,13 +28,16 @@ public class ReportsService {
     private final TokenRepository tokenRepository;
     private final CategoryRepository categoryRepository;
     private final QueueLogRepository queueLogRepository;
+    private final AccessControlService accessControlService;
 
     public ReportsService(TokenRepository tokenRepository,
                           CategoryRepository categoryRepository,
-                          QueueLogRepository queueLogRepository) {
+                          QueueLogRepository queueLogRepository,
+                          AccessControlService accessControlService) {
         this.tokenRepository = tokenRepository;
         this.categoryRepository = categoryRepository;
         this.queueLogRepository = queueLogRepository;
+        this.accessControlService = accessControlService;
     }
 
     @Transactional(readOnly = true)
@@ -43,13 +47,40 @@ public class ReportsService {
         LocalDateTime end = selectedDate.plusDays(1).atStartOfDay();
 
         List<Category> categories = categoryRepository.findAll();
-        List<Token> issuedTokens = tokensIssuedBetween(start, end, categoryId);
-        List<Token> filteredTokens = tokensForCategory(categoryId);
+        return dashboardForCategories(selectedDate, start, end, categoryId, categories);
+    }
 
-        List<Token> completedToday = filteredTokens.stream()
-                .filter(token -> token.getCompletedAt() != null)
-                .filter(token -> !token.getCompletedAt().isBefore(start) && token.getCompletedAt().isBefore(end))
-                .toList();
+    private ReportsDashboard dashboardForAssignedCategory(LocalDate reportDate, Long requestedCategoryId, Long assignedCategoryId) {
+        if (requestedCategoryId != null && !requestedCategoryId.equals(assignedCategoryId)) {
+            throw new AccessDeniedException("You are not authorized to access reports for this category");
+        }
+
+        LocalDate selectedDate = reportDate == null ? LocalDate.now() : reportDate;
+        LocalDateTime start = selectedDate.atStartOfDay();
+        LocalDateTime end = selectedDate.plusDays(1).atStartOfDay();
+        List<Category> categories = categoryRepository.findById(assignedCategoryId)
+                .map(category -> List.of(category))
+                .orElse(List.of());
+
+        return dashboardForCategories(selectedDate, start, end, assignedCategoryId, categories);
+    }
+
+    @Transactional(readOnly = true)
+    public ReportsDashboard dashboardForAssignedCategory(LocalDate reportDate, Long requestedCategoryId, String email) {
+        Long assignedCategoryId = accessControlService.assignedCategoryId(email);
+        if (requestedCategoryId != null) {
+            accessControlService.requireAssignedCategory(email, requestedCategoryId);
+        }
+        return dashboardForAssignedCategory(reportDate, assignedCategoryId, assignedCategoryId);
+    }
+
+    private ReportsDashboard dashboardForCategories(LocalDate selectedDate,
+                                                    LocalDateTime start,
+                                                    LocalDateTime end,
+                                                    Long categoryId,
+                                                    List<Category> categories) {
+        List<Token> issuedTokens = tokensIssuedBetween(start, end, categoryId);
+        List<Token> completedToday = completedTokensBetween(start, end, categoryId);
 
         long skippedToday = categoryId == null
                 ? queueLogRepository.countByActionAndActionTimeBetween("SKIPPED", start, end)
@@ -81,6 +112,16 @@ public class ReportsService {
             return tokenRepository.findAll();
         }
         return tokenRepository.findByCategoryId(categoryId);
+    }
+
+    private List<Token> completedTokensBetween(LocalDateTime start, LocalDateTime end, Long categoryId) {
+        if (categoryId == null) {
+            return tokensForCategory(null).stream()
+                    .filter(token -> token.getCompletedAt() != null)
+                    .filter(token -> !token.getCompletedAt().isBefore(start) && token.getCompletedAt().isBefore(end))
+                    .toList();
+        }
+        return tokenRepository.findByCategoryIdAndCompletedAtBetweenOrderByCompletedAtDesc(categoryId, start, end);
     }
 
     private long waitingCount(Long categoryId) {

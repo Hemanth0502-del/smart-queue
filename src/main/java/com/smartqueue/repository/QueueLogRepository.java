@@ -9,6 +9,7 @@ import org.springframework.data.repository.query.Param;
 
 public interface QueueLogRepository extends JpaRepository<QueueLog, Long> {
     List<QueueLog> findByTokenIdOrderByActionTimeDesc(Long tokenId);
+    List<QueueLog> findByToken_Category_IdOrderByActionTimeDesc(Long categoryId);
     long countByActionAndActionTimeBetween(String action, LocalDateTime start, LocalDateTime end);
 
     @Query("""

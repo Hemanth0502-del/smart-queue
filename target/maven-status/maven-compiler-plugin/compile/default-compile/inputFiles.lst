@@ -3,6 +3,7 @@ D:\smart queue\src\main\java\com\smartqueue\config\SecurityConfig.java
 D:\smart queue\src\main\java\com\smartqueue\controller\AdminController.java
 D:\smart queue\src\main\java\com\smartqueue\controller\AuthController.java
 D:\smart queue\src\main\java\com\smartqueue\controller\HomeController.java
+D:\smart queue\src\main\java\com\smartqueue\controller\NavigationModelAdvice.java
 D:\smart queue\src\main\java\com\smartqueue\controller\StaffController.java
 D:\smart queue\src\main\java\com\smartqueue\controller\UserController.java
 D:\smart queue\src\main\java\com\smartqueue\dto\CategoryForm.java
@@ -34,6 +35,7 @@ D:\smart queue\src\main\java\com\smartqueue\repository\TokenRepository.java
 D:\smart queue\src\main\java\com\smartqueue\repository\UserRepository.java
 D:\smart queue\src\main\java\com\smartqueue\security\DatabaseUserDetailsService.java
 D:\smart queue\src\main\java\com\smartqueue\security\RoleBasedAuthenticationSuccessHandler.java
+D:\smart queue\src\main\java\com\smartqueue\service\AccessControlService.java
 D:\smart queue\src\main\java\com\smartqueue\service\AdminManagementService.java
 D:\smart queue\src\main\java\com\smartqueue\service\DashboardService.java
 D:\smart queue\src\main\java\com\smartqueue\service\LiveQueueService.java

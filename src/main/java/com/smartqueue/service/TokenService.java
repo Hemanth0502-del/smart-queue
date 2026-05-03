@@ -40,17 +40,20 @@ public class TokenService {
     private final CategoryRepository categoryRepository;
     private final CounterRepository counterRepository;
     private final QueueLogRepository queueLogRepository;
+    private final AccessControlService accessControlService;
 
     public TokenService(TokenRepository tokenRepository,
                         UserRepository userRepository,
                         CategoryRepository categoryRepository,
                         CounterRepository counterRepository,
-                        QueueLogRepository queueLogRepository) {
+                        QueueLogRepository queueLogRepository,
+                        AccessControlService accessControlService) {
         this.tokenRepository = tokenRepository;
         this.userRepository = userRepository;
         this.categoryRepository = categoryRepository;
         this.counterRepository = counterRepository;
         this.queueLogRepository = queueLogRepository;
+        this.accessControlService = accessControlService;
     }
 
     @Transactional
@@ -92,9 +95,27 @@ public class TokenService {
         return tokenRepository.findTop10ByOrderByIssuedAtDesc();
     }
 
+    private List<Token> recentTokensForCategory(Long categoryId) {
+        return tokenRepository.findTop10ByCategoryIdOrderByIssuedAtDesc(categoryId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Token> recentTokensForAssignedCategory(String email) {
+        return recentTokensForCategory(accessControlService.assignedCategoryId(email));
+    }
+
     @Transactional(readOnly = true)
     public List<Token> allTokens() {
         return tokenRepository.findAllByOrderByIssuedAtDesc();
+    }
+
+    private List<Token> allTokensForCategory(Long categoryId) {
+        return tokenRepository.findByCategoryIdOrderByIssuedAtDesc(categoryId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Token> allTokensForAssignedCategory(String email) {
+        return allTokensForCategory(accessControlService.assignedCategoryId(email));
     }
 
     @Transactional(readOnly = true)
@@ -124,22 +145,31 @@ public class TokenService {
 
     @Transactional(readOnly = true)
     public List<Token> waitingTokensForStaff(String staffEmail) {
-        Set<Long> assignedCounterIds = assignedCounters(staffEmail).stream()
+        Long assignedCategoryId = accessControlService.assignedCategoryId(staffEmail);
+        Set<Long> categoryCounterIds = assignedCounters(staffEmail).stream()
                 .map(Counter::getId)
                 .collect(java.util.stream.Collectors.toSet());
 
-        if (assignedCounterIds.isEmpty()) {
-            return List.of();
-        }
+        return tokenRepository.findByCategoryIdAndStatusOrderByIssuedAtAsc(assignedCategoryId, TokenStatus.WAITING).stream()
+                .sorted(smartQueueComparator())
+                .filter(token -> token.getCounter() == null || categoryCounterIds.contains(token.getCounter().getId()))
+                .toList();
+    }
 
-        return waitingTokens().stream()
-                .filter(token -> token.getCounter() != null && assignedCounterIds.contains(token.getCounter().getId()))
+    @Transactional(readOnly = true)
+    public List<Token> activeQueueForAssignedCategory(String email) {
+        return tokenRepository.findByCategoryIdAndStatusInOrderByIssuedAtAsc(
+                        accessControlService.assignedCategoryId(email),
+                        ACTIVE_STATUSES
+                ).stream()
+                .sorted(smartQueueComparator())
                 .toList();
     }
 
     @Transactional(readOnly = true)
     public List<Counter> assignedCounters(String staffEmail) {
-        return counterRepository.findByAssignedStaffEmailAndActiveTrue(staffEmail);
+        Long assignedCategoryId = accessControlService.assignedCategoryId(staffEmail);
+        return counterRepository.findByCategoryIdAndActiveTrue(assignedCategoryId);
     }
 
     @Transactional(readOnly = true)
@@ -168,11 +198,42 @@ public class TokenService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<CategoryQueueStatus> categoryQueueStatusesForStaff(String staffEmail) {
+        Long assignedCategoryId = accessControlService.assignedCategoryId(staffEmail);
+        return assignedCounters(staffEmail).stream()
+                .collect(java.util.stream.Collectors.groupingBy(Counter::getCategory))
+                .entrySet()
+                .stream()
+                .map(entry -> {
+                    Category category = entry.getKey();
+                    List<Long> counterIds = entry.getValue().stream()
+                            .map(Counter::getId)
+                            .toList();
+
+                    long waitingCount = counterIds.stream()
+                            .mapToLong(counterId -> tokenRepository.countByCounterIdAndStatus(counterId, TokenStatus.WAITING))
+                            .sum();
+                    long calledCount = counterIds.stream()
+                            .mapToLong(counterId -> tokenRepository.countByCounterIdAndStatus(counterId, TokenStatus.CALLED))
+                            .sum();
+                    long completedCount = counterIds.stream()
+                            .mapToLong(counterId -> tokenRepository.countByCounterIdAndStatus(counterId, TokenStatus.COMPLETED))
+                            .sum();
+
+                    return new CategoryQueueStatus(category, waitingCount, calledCount, completedCount);
+                })
+                .filter(status -> status.category().getId().equals(assignedCategoryId))
+                .filter(status -> status.waitingCount() > 0)
+                .sorted(Comparator.comparing(status -> status.category().getName()))
+                .toList();
+    }
+
     @Transactional
     public Token callNextToken(Long counterId, String staffEmail) {
         Counter counter = counterRepository.findById(counterId)
                 .orElseThrow(() -> new IllegalArgumentException("Counter not found"));
-        ensureCounterAssignedToStaff(counter, staffEmail);
+        ensureCounterInStaffCategory(counter, staffEmail);
         ensureCounterCanServe(counter);
         ensureNoTokenCurrentlyCalled(counter);
 
@@ -191,7 +252,7 @@ public class TokenService {
     public Token recallCurrentToken(Long counterId, String staffEmail) {
         Counter counter = counterRepository.findById(counterId)
                 .orElseThrow(() -> new IllegalArgumentException("Counter not found"));
-        ensureCounterAssignedToStaff(counter, staffEmail);
+        ensureCounterInStaffCategory(counter, staffEmail);
         Token token = tokenRepository.findFirstByCounterIdAndStatusOrderByCalledAtDesc(counterId, TokenStatus.CALLED)
                 .orElseThrow(() -> new IllegalStateException("No called token to recall"));
         token.setCalledAt(LocalDateTime.now());
@@ -203,6 +264,7 @@ public class TokenService {
     public void skipToken(Long tokenId, String staffEmail) {
         Token token = getToken(tokenId);
         requireStatus(token, TokenStatus.CALLED, "Only a called token can be skipped");
+        ensureTokenInStaffCategory(token, staffEmail);
         ensureTokenBelongsToStaffCounter(token, staffEmail);
         token.setStatus(TokenStatus.SKIPPED);
         token.setCalledAt(null);
@@ -216,12 +278,30 @@ public class TokenService {
     public void completeToken(Long tokenId, String staffEmail) {
         Token token = getToken(tokenId);
         requireStatus(token, TokenStatus.CALLED, "Only a called token can be completed");
+        ensureTokenInStaffCategory(token, staffEmail);
         ensureTokenBelongsToStaffCounter(token, staffEmail);
         token.setStatus(TokenStatus.COMPLETED);
         token.setCompletedAt(LocalDateTime.now());
         token.setEstimatedWaitMinutes(0);
         recalculateEstimatesForCategory(token.getCategory().getId());
         log(token, "COMPLETED", "Token completed by staff");
+    }
+
+    @Transactional
+    public void quitQueue(Long tokenId, String userEmail) {
+        Token token = getToken(tokenId);
+        if (!token.getUser().getEmail().equals(userEmail)) {
+            throw new IllegalStateException("You can only quit your own queue token");
+        }
+        if (!ACTIVE_STATUSES.contains(token.getStatus())) {
+            throw new IllegalStateException("This token is no longer active");
+        }
+
+        token.setStatus(TokenStatus.CANCELLED);
+        token.setCalledAt(null);
+        token.setEstimatedWaitMinutes(0);
+        recalculateEstimatesForCategory(token.getCategory().getId());
+        log(token, "CANCELLED", "Token cancelled by user");
     }
 
     @Transactional
@@ -239,6 +319,14 @@ public class TokenService {
     public void recalculateEstimatesForCounter(Long counterId) {
         Counter counter = counterRepository.findById(counterId)
                 .orElseThrow(() -> new IllegalArgumentException("Counter not found"));
+        recalculateEstimatesForCategory(counter.getCategory().getId());
+    }
+
+    @Transactional
+    public void recalculateEstimatesForCounterInScope(Long counterId, String email) {
+        Counter counter = counterRepository.findById(counterId)
+                .orElseThrow(() -> new IllegalArgumentException("Counter not found"));
+        accessControlService.requireAssignedCategory(email, counter.getCategory().getId());
         recalculateEstimatesForCategory(counter.getCategory().getId());
     }
 
@@ -285,9 +373,15 @@ public class TokenService {
     }
 
     private void ensureCounterAssignedToStaff(Counter counter, String staffEmail) {
-        if (counter.getAssignedStaff() == null || !counter.getAssignedStaff().getEmail().equals(staffEmail)) {
-            throw new IllegalStateException("This counter is not assigned to your staff account");
-        }
+        ensureCounterInStaffCategory(counter, staffEmail);
+    }
+
+    private void ensureCounterInStaffCategory(Counter counter, String staffEmail) {
+        accessControlService.requireAssignedCategory(staffEmail, counter.getCategory().getId());
+    }
+
+    private void ensureTokenInStaffCategory(Token token, String staffEmail) {
+        accessControlService.requireAssignedCategory(staffEmail, token.getCategory().getId());
     }
 
     private void ensureTokenBelongsToStaffCounter(Token token, String staffEmail) {

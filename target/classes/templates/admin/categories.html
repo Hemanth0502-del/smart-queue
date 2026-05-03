@@ -16,7 +16,7 @@
             <div class="d-flex flex-column flex-md-row justify-content-between gap-3 align-items-md-center mb-4">
                 <div>
                     <p class="text-uppercase text-muted small fw-semibold mb-1">Admin Management</p>
-                    <h1 class="h3 fw-semibold mb-0">Categories</h1>
+                    <h1 class="h3 fw-semibold mb-0">Assigned Category</h1>
                 </div>
                 <a class="btn btn-outline-dark" th:href="@{/admin/dashboard}">Dashboard</a>
             </div>
@@ -25,7 +25,7 @@
             <div th:if="${errorMessage}" class="alert alert-light border text-danger" th:text="${errorMessage}"></div>
 
             <div class="surface-panel p-4 mb-4">
-                <h2 class="h5 fw-semibold mb-3" th:text="${editingCategoryId == null ? 'Add Category' : 'Edit Category'}">Add Category</h2>
+                <h2 class="h5 fw-semibold mb-3">Edit Assigned Category</h2>
                 <form class="row g-3" th:object="${categoryForm}"
                       th:action="${editingCategoryId == null ? '/admin/categories' : '/admin/categories/' + editingCategoryId}"
                       method="post" novalidate>

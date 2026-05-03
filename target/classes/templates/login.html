@@ -31,9 +31,96 @@
                         </div>
                         <button type="submit" class="btn btn-dark w-100">Login</button>
                     </form>
-                    <div class="empty-state mt-4 py-3">
-                        <p class="text-muted small mb-1">Admin: admin@smartqueue.local / admin123</p>
-                        <p class="text-muted small mb-0">Staff: staff@smartqueue.local / staff123</p>
+                    <div class="demo-credentials mt-4">
+                        <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
+                            <div>
+                                <h2 class="h6 fw-semibold mb-1">Demo Login Accounts</h2>
+                                <p class="small text-muted mb-0">Use any account below to test role-based access.</p>
+                            </div>
+                        </div>
+                        <div class="demo-credentials-scroll">
+                            <section class="demo-group">
+                                <h3 class="demo-group-title">Users</h3>
+                                <div class="demo-account">
+                                    <div class="demo-email">user1@smartqueue.local</div>
+                                    <div class="demo-meta">Password: <span>user123</span></div>
+                                    <div class="demo-meta">Category: <span>None</span></div>
+                                </div>
+                                <div class="demo-account">
+                                    <div class="demo-email">user2@smartqueue.local</div>
+                                    <div class="demo-meta">Password: <span>user123</span></div>
+                                    <div class="demo-meta">Category: <span>None</span></div>
+                                </div>
+                            </section>
+
+                            <section class="demo-group">
+                                <h3 class="demo-group-title">Staff</h3>
+                                <div class="demo-account">
+                                    <div class="demo-email">staff.hospital@smartqueue.local</div>
+                                    <div class="demo-meta">Password: <span>staff123</span></div>
+                                    <div class="demo-meta">Category: <span>Hospital</span></div>
+                                </div>
+                                <div class="demo-account">
+                                    <div class="demo-email">staff.bank@smartqueue.local</div>
+                                    <div class="demo-meta">Password: <span>staff123</span></div>
+                                    <div class="demo-meta">Category: <span>Bank</span></div>
+                                </div>
+                                <div class="demo-account">
+                                    <div class="demo-email">staff.college@smartqueue.local</div>
+                                    <div class="demo-meta">Password: <span>staff123</span></div>
+                                    <div class="demo-meta">Category: <span>College</span></div>
+                                </div>
+                                <div class="demo-account">
+                                    <div class="demo-email">staff.gov@smartqueue.local</div>
+                                    <div class="demo-meta">Password: <span>staff123</span></div>
+                                    <div class="demo-meta">Category: <span>Government Office</span></div>
+                                </div>
+                                <div class="demo-account">
+                                    <div class="demo-email">staff.restaurant@smartqueue.local</div>
+                                    <div class="demo-meta">Password: <span>staff123</span></div>
+                                    <div class="demo-meta">Category: <span>Restaurant</span></div>
+                                </div>
+                                <div class="demo-account">
+                                    <div class="demo-email">staff.service@smartqueue.local</div>
+                                    <div class="demo-meta">Password: <span>staff123</span></div>
+                                    <div class="demo-meta">Category: <span>Service Center</span></div>
+                                </div>
+                            </section>
+
+                            <section class="demo-group">
+                                <h3 class="demo-group-title">Admin</h3>
+                                <div class="demo-account">
+                                    <div class="demo-email">admin.hospital@smartqueue.local</div>
+                                    <div class="demo-meta">Password: <span>admin123</span></div>
+                                    <div class="demo-meta">Category: <span>Hospital</span></div>
+                                </div>
+                                <div class="demo-account">
+                                    <div class="demo-email">admin.bank@smartqueue.local</div>
+                                    <div class="demo-meta">Password: <span>admin123</span></div>
+                                    <div class="demo-meta">Category: <span>Bank</span></div>
+                                </div>
+                                <div class="demo-account">
+                                    <div class="demo-email">admin.college@smartqueue.local</div>
+                                    <div class="demo-meta">Password: <span>admin123</span></div>
+                                    <div class="demo-meta">Category: <span>College</span></div>
+                                </div>
+                                <div class="demo-account">
+                                    <div class="demo-email">admin.gov@smartqueue.local</div>
+                                    <div class="demo-meta">Password: <span>admin123</span></div>
+                                    <div class="demo-meta">Category: <span>Government Office</span></div>
+                                </div>
+                                <div class="demo-account">
+                                    <div class="demo-email">admin.restaurant@smartqueue.local</div>
+                                    <div class="demo-meta">Password: <span>admin123</span></div>
+                                    <div class="demo-meta">Category: <span>Restaurant</span></div>
+                                </div>
+                                <div class="demo-account">
+                                    <div class="demo-email">admin.service@smartqueue.local</div>
+                                    <div class="demo-meta">Password: <span>admin123</span></div>
+                                    <div class="demo-meta">Category: <span>Service Center</span></div>
+                                </div>
+                            </section>
+                        </div>
                     </div>
                     <p class="small mt-3 mb-0 text-center">Need an account? <a class="link-dark fw-semibold" th:href="@{/register}">Register as user</a></p>
                 </div>

@@ -7,6 +7,8 @@ import com.smartqueue.entity.Counter;
 import com.smartqueue.entity.CounterStatus;
 import com.smartqueue.repository.CategoryRepository;
 import com.smartqueue.repository.CounterRepository;
+import java.util.List;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,10 +17,14 @@ public class AdminManagementService {
 
     private final CategoryRepository categoryRepository;
     private final CounterRepository counterRepository;
+    private final AccessControlService accessControlService;
 
-    public AdminManagementService(CategoryRepository categoryRepository, CounterRepository counterRepository) {
+    public AdminManagementService(CategoryRepository categoryRepository,
+                                  CounterRepository counterRepository,
+                                  AccessControlService accessControlService) {
         this.categoryRepository = categoryRepository;
         this.counterRepository = counterRepository;
+        this.accessControlService = accessControlService;
     }
 
     @Transactional
@@ -52,9 +58,33 @@ public class AdminManagementService {
     }
 
     @Transactional
+    public void updateCategoryInScope(Long id, CategoryForm form, Long assignedCategoryId) {
+        requireCategory(id, assignedCategoryId);
+        updateCategory(id, form);
+    }
+
+    @Transactional
+    public void updateCategoryForUser(Long id, CategoryForm form, String email) {
+        accessControlService.requireAssignedCategory(email, id);
+        updateCategory(id, form);
+    }
+
+    @Transactional
     public void setCategoryActive(Long id, boolean active) {
         Category category = getCategory(id);
         category.setActive(active);
+    }
+
+    @Transactional
+    public void setCategoryActiveInScope(Long id, boolean active, Long assignedCategoryId) {
+        requireCategory(id, assignedCategoryId);
+        setCategoryActive(id, active);
+    }
+
+    @Transactional
+    public void setCategoryActiveForUser(Long id, boolean active, String email) {
+        accessControlService.requireAssignedCategory(email, id);
+        setCategoryActive(id, active);
     }
 
     @Transactional
@@ -71,8 +101,21 @@ public class AdminManagementService {
     }
 
     @Transactional
+    public void createCounterInScope(CounterForm form, Long assignedCategoryId) {
+        requireCategory(form.getCategoryId(), assignedCategoryId);
+        createCounter(form);
+    }
+
+    @Transactional
+    public void createCounterForUser(CounterForm form, String email) {
+        accessControlService.requireAssignedCategory(email, form.getCategoryId());
+        createCounter(form);
+    }
+
+    @Transactional
     public void updateCounter(Long id, CounterForm form) {
         Counter counter = getCounter(id);
+        requireCategory(counter.getCategory().getId(), form.getCategoryId());
         String code = form.getCode().trim().toUpperCase();
         counterRepository.findByCodeIgnoreCase(code)
                 .filter(existing -> !existing.getId().equals(id))
@@ -83,10 +126,50 @@ public class AdminManagementService {
     }
 
     @Transactional
+    public void updateCounterInScope(Long id, CounterForm form, Long assignedCategoryId) {
+        Counter counter = getCounter(id);
+        requireCategory(counter.getCategory().getId(), assignedCategoryId);
+        requireCategory(form.getCategoryId(), assignedCategoryId);
+        updateCounter(id, form);
+    }
+
+    @Transactional
+    public void updateCounterForUser(Long id, CounterForm form, String email) {
+        Counter counter = getCounter(id);
+        accessControlService.requireAssignedCategory(email, counter.getCategory().getId());
+        accessControlService.requireAssignedCategory(email, form.getCategoryId());
+        updateCounter(id, form);
+    }
+
+    @Transactional
     public void setCounterStatus(Long id, CounterStatus status) {
         Counter counter = getCounter(id);
         counter.setStatus(status);
         counter.setActive(status != CounterStatus.CLOSED);
+    }
+
+    @Transactional
+    public void setCounterStatusInScope(Long id, CounterStatus status, Long assignedCategoryId) {
+        Counter counter = getCounter(id);
+        requireCategory(counter.getCategory().getId(), assignedCategoryId);
+        setCounterStatus(id, status);
+    }
+
+    @Transactional
+    public void setCounterStatusForUser(Long id, CounterStatus status, String email) {
+        Counter counter = getCounter(id);
+        accessControlService.requireAssignedCategory(email, counter.getCategory().getId());
+        setCounterStatus(id, status);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Category> categoriesForUser(String email) {
+        return List.of(accessControlService.assignedCategory(email));
+    }
+
+    @Transactional(readOnly = true)
+    public List<Counter> countersForUser(String email) {
+        return counterRepository.findByCategoryIdOrderByCodeAsc(accessControlService.assignedCategoryId(email));
     }
 
     private void applyCounterForm(Counter counter, CounterForm form, String code) {
@@ -107,6 +190,12 @@ public class AdminManagementService {
     private Counter getCounter(Long id) {
         return counterRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Counter not found"));
+    }
+
+    private void requireCategory(Long requestedCategoryId, Long assignedCategoryId) {
+        if (requestedCategoryId == null || !requestedCategoryId.equals(assignedCategoryId)) {
+            throw new AccessDeniedException("You are not authorized to manage this category");
+        }
     }
 
     private String clean(String value) {

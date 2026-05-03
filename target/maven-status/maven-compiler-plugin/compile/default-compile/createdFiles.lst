@@ -6,8 +6,10 @@ com\smartqueue\controller\AuthController.class
 com\smartqueue\dto\ReportsDashboard.class
 com\smartqueue\repository\CategoryRepository.class
 com\smartqueue\repository\CounterRepository.class
+com\smartqueue\controller\NavigationModelAdvice.class
 com\smartqueue\security\DatabaseUserDetailsService.class
 com\smartqueue\dto\CounterServiceReport.class
+com\smartqueue\config\DataInitializer$SeedUser.class
 com\smartqueue\dto\TokenRequest.class
 com\smartqueue\repository\TokenRepository.class
 com\smartqueue\entity\Token.class
@@ -18,6 +20,7 @@ com\smartqueue\dto\CategoryTokenReport.class
 com\smartqueue\dto\CounterForm.class
 com\smartqueue\entity\TokenStatus.class
 com\smartqueue\controller\StaffController.class
+com\smartqueue\service\AccessControlService.class
 com\smartqueue\entity\Role.class
 com\smartqueue\dto\CounterQueueStatus.class
 com\smartqueue\controller\UserController.class
@@ -35,6 +38,7 @@ com\smartqueue\dto\DashboardStats.class
 com\smartqueue\service\UserService.class
 com\smartqueue\repository\UserRepository.class
 com\smartqueue\dto\CategoryForm.class
+com\smartqueue\config\DataInitializer$SeedDataRunner.class
 com\smartqueue\controller\AdminController.class
 com\smartqueue\entity\QueueLog.class
 com\smartqueue\config\SecurityConfig.class

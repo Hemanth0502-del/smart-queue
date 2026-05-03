@@ -23,7 +23,7 @@ public class StaffController {
     @GetMapping("/dashboard")
     public String dashboard(Model model, Principal principal) {
         model.addAttribute("counterStatuses", tokenService.counterQueueStatuses(principal.getName()));
-        model.addAttribute("categoryStatuses", tokenService.categoryQueueStatuses());
+        model.addAttribute("categoryStatuses", tokenService.categoryQueueStatusesForStaff(principal.getName()));
         model.addAttribute("waitingTokens", tokenService.waitingTokensForStaff(principal.getName()));
         return "staff/dashboard";
     }

@@ -23,6 +23,7 @@ public class SecurityConfig {
                                 "/css/**", "/js/**", "/webjars/**").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
                         .requestMatchers("/staff/**").hasRole("STAFF")
+                        .requestMatchers("/user/dashboard").authenticated()
                         .requestMatchers("/user/**").hasRole("USER")
                         .anyRequest().authenticated()
                 )

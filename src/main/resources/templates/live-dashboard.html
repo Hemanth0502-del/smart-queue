@@ -17,7 +17,7 @@
                 <p class="text-uppercase text-muted small fw-semibold mb-1">Public Display</p>
                 <h1 class="h2 fw-semibold mb-0">Live Queue Dashboard</h1>
             </div>
-            <form class="d-flex gap-2 align-items-end" th:action="@{/live}" method="get">
+            <form class="d-flex gap-2 align-items-end" th:action="@{/live}" method="get" sec:authorize="!hasAnyRole('STAFF','ADMIN')">
                 <div>
                     <label class="form-label small text-muted mb-1" for="categoryId">Filter by category</label>
                     <select class="form-select form-select-lg" id="categoryId" name="categoryId" onchange="this.form.submit()">
@@ -29,6 +29,10 @@
                 </div>
                 <button class="btn btn-dark btn-lg" type="submit">View</button>
             </form>
+            <div sec:authorize="hasAnyRole('STAFF','ADMIN')" class="text-xl-end">
+                <div class="text-muted small">Assigned Category</div>
+                <div class="h5 fw-semibold mb-0" th:text="${assignedCategory != null ? assignedCategory.name : '-'}">Hospital</div>
+            </div>
         </div>
 
         <div class="surface-panel p-5 text-center" th:if="${dashboard.selectedCategory() == null}">

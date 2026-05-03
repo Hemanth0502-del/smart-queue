@@ -3,6 +3,9 @@ package com.smartqueue.controller;
 import com.smartqueue.dto.TokenRequest;
 import com.smartqueue.entity.Category;
 import com.smartqueue.entity.PriorityType;
+import com.smartqueue.entity.Role;
+import com.smartqueue.entity.User;
+import com.smartqueue.service.AccessControlService;
 import com.smartqueue.service.TokenService;
 import com.smartqueue.repository.CategoryRepository;
 import jakarta.validation.Valid;
@@ -12,6 +15,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,16 +27,24 @@ public class UserController {
 
     private final CategoryRepository categoryRepository;
     private final TokenService tokenService;
+    private final AccessControlService accessControlService;
 
-    public UserController(CategoryRepository categoryRepository, TokenService tokenService) {
+    public UserController(CategoryRepository categoryRepository,
+                          TokenService tokenService,
+                          AccessControlService accessControlService) {
         this.categoryRepository = categoryRepository;
         this.tokenService = tokenService;
+        this.accessControlService = accessControlService;
     }
 
     @GetMapping("/dashboard")
     public String dashboard(@RequestParam(required = false) Long categoryId,
                             Model model,
                             Principal principal) {
+        String roleRedirect = redirectForNonUser(principal.getName());
+        if (roleRedirect != null) {
+            return roleRedirect;
+        }
         TokenRequest tokenRequest = new TokenRequest();
         tokenRequest.setCategoryId(categoryId);
         addDashboardModel(model, principal.getName(), tokenRequest, categoryId);
@@ -67,6 +79,19 @@ public class UserController {
         return "user/token-status";
     }
 
+    @PostMapping("/tokens/{tokenId}/quit")
+    public String quitQueue(@PathVariable Long tokenId,
+                            Principal principal,
+                            RedirectAttributes redirectAttributes) {
+        try {
+            tokenService.quitQueue(tokenId, principal.getName());
+            redirectAttributes.addFlashAttribute("message", "You have left the queue");
+        } catch (IllegalArgumentException | IllegalStateException ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+        }
+        return "redirect:/user/dashboard";
+    }
+
     @GetMapping("/my-token")
     public String myToken(Model model, Principal principal) {
         model.addAttribute("currentToken", tokenService.currentActiveToken(principal.getName()).orElse(null));
@@ -91,5 +116,16 @@ public class UserController {
         return categoryRepository.findById(categoryId)
                 .filter(Category::isActive)
                 .orElse(null);
+    }
+
+    private String redirectForNonUser(String email) {
+        User user = accessControlService.currentUser(email);
+        if (user.getRole() == Role.STAFF) {
+            return "redirect:/staff/dashboard";
+        }
+        if (user.getRole() == Role.ADMIN) {
+            return "redirect:/admin/dashboard";
+        }
+        return null;
     }
 }

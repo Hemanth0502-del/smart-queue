@@ -16,6 +16,9 @@
                 <p class="text-uppercase text-muted small fw-semibold mb-1">Staff Queue Desk</p>
                 <h1 class="h3 fw-semibold mb-0">Live Queue Operations</h1>
             </div>
+            <span class="badge text-bg-light border px-3 py-2"
+                  th:if="${assignedCategory != null}"
+                  th:text="${'Category Access: ' + assignedCategory.name}">Category Access: Hospital</span>
         </div>
         <div th:if="${message}" class="alert alert-light border" th:text="${message}"></div>
 

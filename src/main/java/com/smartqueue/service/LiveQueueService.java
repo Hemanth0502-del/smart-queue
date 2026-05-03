@@ -21,25 +21,46 @@ public class LiveQueueService {
     private final CategoryRepository categoryRepository;
     private final CounterRepository counterRepository;
     private final TokenRepository tokenRepository;
+    private final AccessControlService accessControlService;
 
     public LiveQueueService(CategoryRepository categoryRepository,
                             CounterRepository counterRepository,
-                            TokenRepository tokenRepository) {
+                            TokenRepository tokenRepository,
+                            AccessControlService accessControlService) {
         this.categoryRepository = categoryRepository;
         this.counterRepository = counterRepository;
         this.tokenRepository = tokenRepository;
+        this.accessControlService = accessControlService;
     }
 
     @Transactional(readOnly = true)
     public LiveQueueDashboard dashboard(Long categoryId) {
         List<Category> categories = categoryRepository.findByActiveTrueOrderByNameAsc();
+        return dashboard(categoryId, categories);
+    }
+
+    @Transactional(readOnly = true)
+    public LiveQueueDashboard dashboardForAssignedCategory(Long assignedCategoryId) {
+        List<Category> categories = categoryRepository.findById(assignedCategoryId)
+                .filter(Category::isActive)
+                .map(category -> List.of(category))
+                .orElse(List.of());
+        return dashboard(assignedCategoryId, categories);
+    }
+
+    @Transactional(readOnly = true)
+    public LiveQueueDashboard dashboardForAssignedCategory(String email) {
+        return dashboardForAssignedCategory(accessControlService.assignedCategoryId(email));
+    }
+
+    private LiveQueueDashboard dashboard(Long categoryId, List<Category> categories) {
         Category selectedCategory = selectedCategory(categoryId, categories);
 
         if (selectedCategory == null) {
             return new LiveQueueDashboard(categories, null, List.of(), List.of(), 0, 0);
         }
 
-        List<Token> categoryWaitingTokens = smartOrderedWaitingTokens(selectedCategory.getId());
+        List<Token> categoryWaitingTokens = activeWaitingQueue(selectedCategory.getId());
         List<LiveCounterStatus> counterStatuses = counterRepository.findByCategoryId(selectedCategory.getId()).stream()
                 .map(counter -> counterStatus(counter, categoryWaitingTokens))
                 .toList();
@@ -82,8 +103,8 @@ public class LiveQueueService {
         );
     }
 
-    private List<Token> smartOrderedWaitingTokens(Long categoryId) {
-        return tokenRepository.findByCategoryIdAndStatus(categoryId, TokenStatus.WAITING).stream()
+    private List<Token> activeWaitingQueue(Long categoryId) {
+        return tokenRepository.findByCategoryIdAndStatusOrderByIssuedAtAsc(categoryId, TokenStatus.WAITING).stream()
                 .sorted(smartQueueComparator())
                 .toList();
     }

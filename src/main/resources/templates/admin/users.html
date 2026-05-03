@@ -23,6 +23,7 @@
                             <th>Email</th>
                             <th>Phone</th>
                             <th>Role</th>
+                            <th>Category</th>
                             <th>Status</th>
                             <th>Created</th>
                         </tr>
@@ -30,14 +31,15 @@
                         <tbody>
                         <tr th:each="user : ${users}">
                             <td class="fw-semibold" th:text="${user.fullName}">System Administrator</td>
-                            <td th:text="${user.email}">admin@smartqueue.local</td>
+                            <td th:text="${user.email}">staff.hospital@smartqueue.local</td>
                             <td th:text="${user.phone} ?: '-'">-</td>
                             <td><span class="badge text-bg-light border" th:text="${user.role}">ADMIN</span></td>
+                            <td th:text="${user.category != null ? user.category.name : '-'}">Hospital</td>
                             <td th:text="${user.active ? 'Active' : 'Inactive'}">Active</td>
                             <td th:text="${#temporals.format(user.createdAt, 'dd MMM yyyy HH:mm')}">30 Apr 2026</td>
                         </tr>
                         <tr th:if="${#lists.isEmpty(users)}">
-                            <td colspan="6" class="text-center text-muted py-4">No users found.</td>
+                            <td colspan="7" class="text-center text-muted py-4">No staff found for this category.</td>
                         </tr>
                         </tbody>
                     </table>
