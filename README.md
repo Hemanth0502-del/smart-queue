@@ -2,7 +2,6 @@
 
 Smart Queue Management System is a full-stack Java web application for managing service queues using role-based access, token generation, staff counter operations, live queue displays, and admin reports.
 
-The project is built for a final-year college submission and follows a clean layered Spring Boot architecture.
 
 ## Features
 
